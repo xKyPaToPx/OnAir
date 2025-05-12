@@ -16,7 +16,8 @@ namespace OnAir.Views
         {
             using (var db = new AppDbContext())
             {
-                UsersDataGrid.ItemsSource = db.Users.ToList();
+                var temp = db.Users.ToList();
+                UsersDataGrid.ItemsSource = temp;
             }
         }
 

@@ -27,12 +27,10 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Название:" Margin="0,0,0,5"/>
-        <TextBox x:Name="TitleTextBox" Grid.Row="1" Margin="0,0,0,10"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+        <TextBox x:Name="TitleTextBox" Grid.Row="1" Margin="0,0,0,10"/>
 
         <TextBlock Grid.Row="2" Text="Описание:" Margin="0,0,0,5"/>
-        <TextBox x:Name="DescriptionTextBox" Grid.Row="3" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" Height="60"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+        <TextBox x:Name="DescriptionTextBox" Grid.Row="3" Margin="0,0,0,10" TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
 
         <Grid Grid.Row="4" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -42,34 +40,27 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="Серия:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <TextBox x:Name="SeriesTextBox" Grid.Column="1" Margin="0,0,10,0"
-                     BorderBrush="{StaticResource BorderBrush}"/>
+            <TextBox x:Name="SeriesTextBox" Grid.Column="1" Margin="0,0,10,0"/>
             <TextBlock Grid.Column="2" Text="Часть:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <TextBox x:Name="PartTextBox" Grid.Column="3"
-                     BorderBrush="{StaticResource BorderBrush}"/>
+            <TextBox x:Name="PartTextBox" Grid.Column="3"/>
         </Grid>
 
         <TextBlock Grid.Row="5" Text="Права:" Margin="0,0,0,5"/>
-        <TextBox x:Name="RightsTextBox" Grid.Row="6" Margin="0,0,0,10"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+        <TextBox x:Name="RightsTextBox" Grid.Row="6" Margin="0,0,0,10"/>
 
         <TextBlock Grid.Row="7" Text="Заказчик:" Margin="0,0,0,5"/>
-        <TextBox x:Name="CustomerTextBox" Grid.Row="8" Margin="0,0,0,10"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+        <TextBox x:Name="CustomerTextBox" Grid.Row="8" Margin="0,0,0,10"/>
 
         <TextBlock Grid.Row="9" Text="Длительность:" Margin="0,0,0,5"/>
         <StackPanel Grid.Row="10" Orientation="Horizontal" Margin="0,0,0,10" Grid.RowSpan="2">
-            <TextBox x:Name="HoursTextBox" Width="40" Margin="0,0,5,0"
-                     BorderBrush="{StaticResource BorderBrush}"/>
+            <TextBox x:Name="HoursTextBox" Width="40" Margin="0,0,5,0"/>
             <TextBlock Text="ч" VerticalAlignment="Center" Margin="0,0,5,0"/>
-            <TextBox x:Name="MinutesTextBox" Width="40" Margin="0,0,5,0"
-                     BorderBrush="{StaticResource BorderBrush}"/>
+            <TextBox x:Name="MinutesTextBox" Width="40" Margin="0,0,5,0"/>
             <TextBlock Text="м" VerticalAlignment="Center"/>
         </StackPanel>
 
         <TextBlock Grid.Row="12" Text="Возрастное ограничение:" Margin="0,0,5,0" FontSize="12"/>
-        <ComboBox x:Name="AgeLimitComboBox" Grid.Row="13" Margin="0,0,5,0"
-                  BorderBrush="{StaticResource BorderBrush}">
+        <ComboBox x:Name="AgeLimitComboBox" Grid.Row="13" Margin="0,0,5,0">
             <ComboBoxItem Content="0+"/>
             <ComboBoxItem Content="6+"/>
             <ComboBoxItem Content="12+"/>
@@ -78,26 +69,20 @@
         </ComboBox>
 
         <TextBlock Grid.Row="14" Text="Количество элементов:" Margin="0,0,5,0" FontSize="12"/>
-        <TextBox x:Name="CountTextBox" Grid.Row="15" Margin="0,0,0,10" Text="1"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+        <TextBox x:Name="CountTextBox" Grid.Row="15" Margin="0,0,0,10" Text="1"/>
 
         <TextBlock Grid.Row="16" Text="Тип элемента:" Margin="0,0,5,0" FontSize="12"/>
         <TextBox x:Name="BroadcastItemTypeText" Grid.Row="17" Margin="0,0,0,10"
                  Text="Стандартный"
-                 IsReadOnly="True"
-                 BorderBrush="{StaticResource BorderBrush}"/>
+                 IsReadOnly="True"/>
 
         <Grid Grid.Row="18" Margin="0,0,5,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="SaveButton" Grid.Column="0" Content="Сохранить" Margin="0,0,5,0" Click="SaveButton_Click"
-                    Background="{StaticResource AccentBrush}"
-                    Foreground="{StaticResource ForegroundBrush}"/>
-            <Button x:Name="CancelButton" Grid.Column="1" Content="Отмена" Margin="5,0,0,0" Click="CancelButton_Click"
-                    Background="{StaticResource AccentBrush}"
-                    Foreground="{StaticResource ForegroundBrush}"/>
+            <Button x:Name="SaveButton" Grid.Column="0" Content="Сохранить" Margin="0,0,5,0" Click="SaveButton_Click"/>
+            <Button x:Name="CancelButton" Grid.Column="1" Content="Отмена" Margin="5,0,0,0" Click="CancelButton_Click"/>
         </Grid>
     </Grid>
 </Window> 
