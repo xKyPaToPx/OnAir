@@ -11,7 +11,10 @@ namespace OnAir.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=OnAirUsersDb;Trusted_Connection=True;");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(AppConfig.GetConnectionString());
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
