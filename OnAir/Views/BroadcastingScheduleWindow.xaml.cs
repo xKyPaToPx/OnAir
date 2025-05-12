@@ -325,19 +325,6 @@ namespace OnAir.Views
             }
         }
 
-        private void SaveScheduleOrder()
-        {
-            try
-            {
-                // Здесь можно добавить логику сохранения порядка элементов в базе данных
-                // если это необходимо
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при сохранении порядка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void AvailableItemsListBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)

@@ -63,7 +63,6 @@ namespace OnAir
             var manageUsersButton = new Button
             {
                 Content = "Управление пользователями",
-                Width = 200,
                 Margin = new Thickness(0, 10, 0, 0),
             };
             manageUsersButton.Click += (s, e) => new UserManagementWindow().Show();
@@ -72,7 +71,6 @@ namespace OnAir
             var manageItemsButton = new Button
             {
                 Content = "Управление элементами вещания",
-                Width = 200,
                 Margin = new Thickness(0, 10, 0, 0),
             };
             manageItemsButton.Click += (s, e) =>
@@ -103,8 +101,6 @@ namespace OnAir
             var broadcastItemsButton = new Button
             {
                 Content = "Управление элементами вещания",
-                Width = 250,
-                Height = 40,
                 Margin = new Thickness(0, 0, 0, 10),
             };
             broadcastItemsButton.Click += (s, e) =>
@@ -134,7 +130,6 @@ namespace OnAir
             var manageScheduleButton = new Button
             {
                 Content = "Управление расписанием",
-                Width = 200,
                 Margin = new Thickness(0, 10, 0, 0),
                 
             };
@@ -144,7 +139,6 @@ namespace OnAir
             var manageItemsButton = new Button
             {
                 Content = "Управление элементами вещания",
-                Width = 200,
                 Margin = new Thickness(0, 10, 0, 0),
               
             };
