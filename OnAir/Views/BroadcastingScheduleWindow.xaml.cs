@@ -128,6 +128,39 @@ namespace OnAir.Views
             }
         }
 
+        private void PlannedEndTimeTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            string newText = textBox.Text.Insert(textBox.CaretIndex, e.Text);
+
+            // Если текст пустой или содержит только цифры и двоеточие, разрешаем ввод
+            if (string.IsNullOrEmpty(newText) || newText.All(c => char.IsDigit(c) || c == ':'))
+            {
+                return;
+            }
+
+            if (!_timeRegex.IsMatch(newText))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void PlannedEndTimeTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            if (!_timeRegex.IsMatch(textBox.Text))
+            {
+                MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 23:00)",
+                    "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
+                textBox.Text = "";
+            }
+            // Здесь можно добавить сохранение значения в модель Broadcast, если нужно
+        }
+
         private void UpdateScheduleTimes()
         {
             TimeSpan currentTime = _startTime;
@@ -463,6 +496,16 @@ namespace OnAir.Views
                     // Обновляем время начала
                     existingBroadcast.StartTime = _startTime;
 
+                    // Обновляем планируемое время окончания
+                    if (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+                    {
+                        existingBroadcast.PlannedEndTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
+                    }
+                    else
+                    {
+                        existingBroadcast.PlannedEndTime = null;
+                    }
+
                     // Открепляем все существующие элементы
                     var existingItems = _context.BroadcastItems.Where(i => i.BroadcastId == existingBroadcast.Id).ToList();
                     foreach (var item in existingItems)
@@ -477,7 +520,10 @@ namespace OnAir.Views
                     existingBroadcast = new Broadcast
                     {
                         Date = date,
-                        StartTime = _startTime
+                        StartTime = _startTime,
+                        PlannedEndTime = (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+                            ? TimeSpan.Parse(PlannedEndTimeTextBox.Text)
+                            : null
                     };
                     _context.Broadcasts.Add(existingBroadcast);
                 }
@@ -503,6 +549,103 @@ namespace OnAir.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при сохранении расписания: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void AutoFillButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Получаем планируемое время окончания
+                TimeSpan? plannedEndTime = null;
+                if (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+                {
+                    plannedEndTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
+                }
+
+                // Получаем список доступных элементов
+                var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
+                if (!availableItems.Any())
+                {
+                    MessageBox.Show("Нет доступных элементов для добавления в расписание", 
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Получаем список рекламных блоков
+                var adItems = availableItems.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising).ToList();
+                if (!adItems.Any())
+                {
+                    MessageBox.Show("Нет доступных рекламных блоков", 
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Очищаем текущее расписание
+                _schedule.Clear();
+
+                // Группируем элементы по названию и серии
+                var groupedItems = availableItems
+                    .Where(i => i.BroadcastItemType != BroadcastItemType.Advertising)
+                    .GroupBy(i => new { i.Title, i.Series })
+                    .ToList();
+
+                TimeSpan currentTime = _startTime;
+                int adIndex = 0;
+
+                foreach (var group in groupedItems)
+                {
+                    // Получаем все части для текущей группы
+                    var parts = group.OrderBy(i => i.Part).ToList();
+                    
+                    // Добавляем все части подряд
+                    foreach (var part in parts)
+                    {
+                        // Проверяем, не превышено ли планируемое время окончания
+                        if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value)
+                        {
+                            return;
+                        }
+
+                        // Добавляем часть в расписание
+                        _schedule.Add(new Broadcast
+                        {
+                            Date = DateOnly.FromDateTime(_selectedDate),
+                            StartTime = currentTime,
+                            Items = new List<BroadcastItem> { part }
+                        });
+
+                        currentTime = currentTime.Add(part.Duration);
+
+                        // Добавляем рекламный блок после каждой части
+                        if (adItems.Any())
+                        {
+                            var adItem = adItems[adIndex % adItems.Count];
+                            _schedule.Add(new Broadcast
+                            {
+                                Date = DateOnly.FromDateTime(_selectedDate),
+                                StartTime = currentTime,
+                                Items = new List<BroadcastItem> { adItem }
+                            });
+
+                            currentTime = currentTime.Add(adItem.Duration);
+                            adIndex++;
+                        }
+                    }
+                }
+
+                // Обновляем отображение
+                ScheduleListBox.Items.Refresh();
+
+                // Удаляем добавленные элементы из списка доступных
+                var scheduledItems = _schedule.SelectMany(b => b.Items).ToList();
+                availableItems.RemoveAll(i => scheduledItems.Contains(i));
+                AvailableItemsListBox.ItemsSource = availableItems;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при автоматическом заполнении расписания: {ex.Message}", 
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

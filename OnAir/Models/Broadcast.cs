@@ -9,5 +9,6 @@ namespace OnAir.Models
         public DateOnly Date { get; set; }
         public List<BroadcastItem> Items { get; set; } = new List<BroadcastItem>();
         public TimeSpan StartTime { get; set; }
+        public TimeSpan? PlannedEndTime { get; set; }
     }
 }
