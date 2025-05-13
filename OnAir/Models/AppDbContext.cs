@@ -13,7 +13,7 @@ namespace OnAir.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(AppConfig.GetConnectionString());
+                optionsBuilder.UseSqlite(AppConfig.GetConnectionString());
             }
         }
 

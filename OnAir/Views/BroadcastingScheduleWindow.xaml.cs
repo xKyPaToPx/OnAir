@@ -298,8 +298,13 @@ namespace OnAir.Views
         private void MoveUp_Click(object sender, RoutedEventArgs e)
         {
             if (_schedule == null) return;
-
             var selectedIndex = ScheduleListBox.SelectedIndex;
+            if (selectedIndex == -1)
+            {
+                MessageBox.Show("Пожалуйста, выберите элемент для перемещения",
+                    "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (selectedIndex > 0)
             {
                 var item = _schedule[selectedIndex];
@@ -313,8 +318,13 @@ namespace OnAir.Views
         private void MoveDown_Click(object sender, RoutedEventArgs e)
         {
             if (_schedule == null) return;
-
             var selectedIndex = ScheduleListBox.SelectedIndex;
+            if (selectedIndex == -1)
+            {
+                MessageBox.Show("Пожалуйста, выберите элемент для перемещения",
+                    "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (selectedIndex < _schedule.Count - 1)
             {
                 var item = _schedule[selectedIndex];
