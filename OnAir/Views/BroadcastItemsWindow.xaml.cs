@@ -36,6 +36,7 @@ namespace OnAir.Views
             try
             {
                 var items = _context.BroadcastItems
+                    .Include(i => i.Broadcast)
                     .OrderByDescending(i => i.BroadcastItemType)
                     .ToList();
 

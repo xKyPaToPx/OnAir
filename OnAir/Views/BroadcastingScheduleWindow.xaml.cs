@@ -560,9 +560,12 @@ namespace OnAir.Views
                     plannedEndTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
                 }
 
-                // Получаем список доступных элементов
-                var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
-                if (!availableItems.Any())
+                // Получаем список всех доступных элементов из базы данных
+                var allAvailableItems = _context.BroadcastItems
+                    .Where(i => i.BroadcastId == null)
+                    .ToList();
+
+                if (!allAvailableItems.Any())
                 {
                     MessageBox.Show("Нет доступных элементов для добавления в расписание", 
                         "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -570,7 +573,7 @@ namespace OnAir.Views
                 }
 
                 // Получаем список рекламных блоков
-                var adItems = availableItems.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising).ToList();
+                var adItems = allAvailableItems.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising).ToList();
                 if (!adItems.Any())
                 {
                     MessageBox.Show("Нет доступных рекламных блоков", 
@@ -581,63 +584,161 @@ namespace OnAir.Views
                 // Очищаем текущее расписание
                 _schedule.Clear();
 
-                // Группируем элементы по названию и серии
-                var groupedItems = availableItems
-                    .Where(i => i.BroadcastItemType != BroadcastItemType.Advertising)
+                // Разделяем элементы на временные и обычные
+                var timeBasedItems = new List<BroadcastItem>();
+                var regularItems = new List<BroadcastItem>();
+
+                foreach (var item in allAvailableItems.Where(i => i.BroadcastItemType != BroadcastItemType.Advertising))
+                {
+                    // Проверяем, содержит ли название время
+                    var timeMatch = Regex.Match(item.Title, @"(\d{1,2}:\d{2})");
+                    if (timeMatch.Success)
+                    {
+                        timeBasedItems.Add(item);
+                    }
+                    else
+                    {
+                        regularItems.Add(item);
+                    }
+                }
+
+                // Группируем обычные элементы по названию и серии
+                var groupedPrograms = regularItems
                     .GroupBy(i => new { i.Title, i.Series })
                     .ToList();
 
+                // Перемешиваем группы программ случайным образом
+                var rnd = new Random();
+                groupedPrograms = groupedPrograms.OrderBy(x => rnd.Next()).ToList();
+
+                // Сортируем timeBasedItems по времени
+                var sortedTimeBased = timeBasedItems.OrderBy(i => {
+                    var timeMatch = Regex.Match(i.Title, @"(\d{1,2}:\d{2})");
+                    return TimeSpan.Parse(timeMatch.Groups[1].Value);
+                }).ToList();
+
                 TimeSpan currentTime = _startTime;
-                int adIndex = 0;
+                var usedTitles = new HashSet<string>();
 
-                foreach (var group in groupedItems)
+                // Индекс для timeBasedItems
+                int timeBasedIndex = 0;
+                while ((plannedEndTime == null || currentTime < plannedEndTime) && (groupedPrograms.Any() || timeBasedIndex < sortedTimeBased.Count))
                 {
-                    // Получаем все части для текущей группы
-                    var parts = group.OrderBy(i => i.Part).ToList();
-                    
-                    // Добавляем все части подряд
-                    foreach (var part in parts)
+                    // Если есть программа с фиксированным временем, и пора её ставить
+                    if (timeBasedIndex < sortedTimeBased.Count)
                     {
-                        // Проверяем, не превышено ли планируемое время окончания
-                        if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value)
+                        var timeItem = sortedTimeBased[timeBasedIndex];
+                        var timeMatch = Regex.Match(timeItem.Title, @"(\d{1,2}:\d{2})");
+                        var targetTime = TimeSpan.Parse(timeMatch.Groups[1].Value);
+                        if (currentTime < targetTime && groupedPrograms.Any())
                         {
-                            return;
+                            // Ставим обычную программу до фиксированной
+                            var group = groupedPrograms.First();
+                            var parts = group.OrderBy(i => i.Part).ToList();
+                            foreach (var part in parts)
+                            {
+                                if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value) break;
+                                _schedule.Add(new Broadcast
+                                {
+                                    Date = DateOnly.FromDateTime(_selectedDate),
+                                    StartTime = currentTime,
+                                    Items = new List<BroadcastItem> { part }
+                                });
+                                currentTime = currentTime.Add(part.Duration);
+                                // Реклама
+                                var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == part.AgeLimit);
+                                if (matchingAd != null)
+                                {
+                                    _schedule.Add(new Broadcast
+                                    {
+                                        Date = DateOnly.FromDateTime(_selectedDate),
+                                        StartTime = currentTime,
+                                        Items = new List<BroadcastItem> { matchingAd }
+                                    });
+                                    currentTime = currentTime.Add(matchingAd.Duration);
+                                }
+                            }
+                            groupedPrograms.RemoveAt(0);
+                            continue;
                         }
-
-                        // Добавляем часть в расписание
-                        _schedule.Add(new Broadcast
+                        else if (currentTime <= targetTime)
                         {
-                            Date = DateOnly.FromDateTime(_selectedDate),
-                            StartTime = currentTime,
-                            Items = new List<BroadcastItem> { part }
-                        });
-
-                        currentTime = currentTime.Add(part.Duration);
-
-                        // Добавляем рекламный блок после каждой части
-                        if (adItems.Any())
-                        {
-                            var adItem = adItems[adIndex % adItems.Count];
+                            // Ставим программу с фиксированным временем
+                            if (currentTime < targetTime)
+                                currentTime = targetTime;
                             _schedule.Add(new Broadcast
                             {
                                 Date = DateOnly.FromDateTime(_selectedDate),
                                 StartTime = currentTime,
-                                Items = new List<BroadcastItem> { adItem }
+                                Items = new List<BroadcastItem> { timeItem }
                             });
-
-                            currentTime = currentTime.Add(adItem.Duration);
-                            adIndex++;
+                            currentTime = currentTime.Add(timeItem.Duration);
+                            // Реклама
+                            var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == timeItem.AgeLimit);
+                            if (matchingAd != null)
+                            {
+                                _schedule.Add(new Broadcast
+                                {
+                                    Date = DateOnly.FromDateTime(_selectedDate),
+                                    StartTime = currentTime,
+                                    Items = new List<BroadcastItem> { matchingAd }
+                                });
+                                currentTime = currentTime.Add(matchingAd.Duration);
+                            }
+                            timeBasedIndex++;
+                            continue;
                         }
+                        else
+                        {
+                            // Уже пропустили время, просто идём дальше
+                            timeBasedIndex++;
+                            continue;
+                        }
+                    }
+                    // Если нет фиксированных программ или их время уже прошло — ставим обычные
+                    if (groupedPrograms.Any())
+                    {
+                        var group = groupedPrograms.First();
+                        var parts = group.OrderBy(i => i.Part).ToList();
+                        foreach (var part in parts)
+                        {
+                            if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value) break;
+                            _schedule.Add(new Broadcast
+                            {
+                                Date = DateOnly.FromDateTime(_selectedDate),
+                                StartTime = currentTime,
+                                Items = new List<BroadcastItem> { part }
+                            });
+                            currentTime = currentTime.Add(part.Duration);
+                            // Реклама
+                            var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == part.AgeLimit);
+                            if (matchingAd != null)
+                            {
+                                _schedule.Add(new Broadcast
+                                {
+                                    Date = DateOnly.FromDateTime(_selectedDate),
+                                    StartTime = currentTime,
+                                    Items = new List<BroadcastItem> { matchingAd }
+                                });
+                                currentTime = currentTime.Add(matchingAd.Duration);
+                            }
+                        }
+                        groupedPrograms.RemoveAt(0);
+                    }
+                    else
+                    {
+                        // Нет больше программ — выходим
+                        break;
                     }
                 }
 
                 // Обновляем отображение
                 ScheduleListBox.Items.Refresh();
 
-                // Удаляем добавленные элементы из списка доступных
+                // Обновляем список доступных элементов
                 var scheduledItems = _schedule.SelectMany(b => b.Items).ToList();
-                availableItems.RemoveAll(i => scheduledItems.Contains(i));
-                AvailableItemsListBox.ItemsSource = availableItems;
+                var remainingItems = allAvailableItems.Where(i => !scheduledItems.Contains(i)).ToList();
+                AvailableItemsListBox.ItemsSource = remainingItems;
             }
             catch (Exception ex)
             {

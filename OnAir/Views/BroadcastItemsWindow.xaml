@@ -27,7 +27,6 @@
                   SelectionUnit="FullRow">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Время показа" Binding="{Binding BroadcastTime, StringFormat='{}{0:hh\\:mm}'}" Width="100"/>
                 <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*"/>
                 <DataGridTextColumn Header="Серия" Binding="{Binding Series}" Width="80"/>
