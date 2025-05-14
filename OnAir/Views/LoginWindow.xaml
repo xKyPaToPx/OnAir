@@ -3,11 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Вход в систему" Height="450" Width="400"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
-    <Grid>
-        <Border Margin="0"
-                BorderThickness="1">
-            <Grid Margin="20">
+        ResizeMode="NoResize"
+        Background="{DynamicResource AppBackgroundGradient}">
+    <Grid Background="{DynamicResource AppBackgroundGradient}">
+        <Border Margin="40"
+                Padding="20"
+                CornerRadius="16"
+                Background="{DynamicResource PanelBrush}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.35"/>
+            </Border.Effect>
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -15,29 +21,32 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="Вход в систему"
-                         FontSize="24"
-                         FontWeight="Bold"
-                         HorizontalAlignment="Center"
-                         Margin="0,0,0,20"/>
+                           Style="{DynamicResource HeaderText}"
+                           FontSize="28"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
 
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
                     <TextBlock Text="Имя пользователя"
-                             Margin="0,0,0,5"/>
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,5"/>
                     <TextBox x:Name="UsernameTextBox"
-                            Height="35"
-                            Margin="0,0,0,15"/>
+                             Height="35"
+                             Margin="0,0,0,15"/>
 
                     <TextBlock Text="Пароль"
-                             Margin="0,0,0,5"/>
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,5"/>
                     <PasswordBox x:Name="PasswordBox"
-                               Height="35"
-                               Margin="0,0,0,20"/>
+                                 Height="35"
+                                 Margin="0,0,0,20"/>
                 </StackPanel>
 
                 <Button Grid.Row="2"
                         Content="Войти"
                         Height="40"
-                        Click="LoginButton_Click"/>
+                        Click="LoginButton_Click"
+                        Style="{StaticResource ModernButtonStyle}"/>
             </Grid>
         </Border>
     </Grid>
