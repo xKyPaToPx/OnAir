@@ -64,6 +64,7 @@ namespace OnAir
             {
                 Content = "Управление пользователями",
                 Margin = new Thickness(0, 10, 0, 0),
+                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
             };
             manageUsersButton.Click += (s, e) => new UserManagementWindow().Show();
             adminPanel.Children.Add(manageUsersButton);
@@ -72,6 +73,7 @@ namespace OnAir
             {
                 Content = "Управление элементами вещания",
                 Margin = new Thickness(0, 10, 0, 0),
+                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
             };
             manageItemsButton.Click += (s, e) =>
             {
@@ -102,6 +104,7 @@ namespace OnAir
             {
                 Content = "Управление элементами вещания",
                 Margin = new Thickness(0, 0, 0, 10),
+                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
             };
             broadcastItemsButton.Click += (s, e) =>
             {
@@ -131,7 +134,7 @@ namespace OnAir
             {
                 Content = "Управление расписанием",
                 Margin = new Thickness(0, 10, 0, 0),
-                
+                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
             };
             manageScheduleButton.Click += (s, e) => new BroadcastingScheduleWindow().Show();
             broadcastingPanel.Children.Add(manageScheduleButton);
@@ -140,7 +143,7 @@ namespace OnAir
             {
                 Content = "Управление элементами вещания",
                 Margin = new Thickness(0, 10, 0, 0),
-              
+                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
             };
             manageItemsButton.Click += (s, e) =>
             {

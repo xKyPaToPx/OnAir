@@ -42,7 +42,8 @@
                                      VerticalAlignment="Center"/>
                             <Button x:Name="LogoutButton"
                                     Content="Выйти"
-                                    Click="LogoutButton_Click"/>
+                                    Click="LogoutButton_Click"
+                                    Style="{StaticResource ModernButtonStyle}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
