@@ -11,17 +11,25 @@ namespace OnAir.Views
         private readonly BroadcastItem _item;
         private readonly bool _isEditMode;
         private readonly bool _isAdvertisingMode;
+        private readonly bool _isAdmin;
 
-        public AddBroadcastItemWindow(BroadcastItem item = null, bool isAdvertisingMode = false)
+        public AddBroadcastItemWindow(BroadcastItem item = null, bool isAdvertisingMode = false, bool isAdmin = false)
         {
             InitializeComponent();
             _context = new AppDbContext();
             _item = item;
             _isEditMode = item != null;
             _isAdvertisingMode = isAdvertisingMode;
+            _isAdmin = isAdmin;
 
             // Настройка интерфейса в зависимости от режима
-            if (_isAdvertisingMode)
+            if (_isAdmin)
+            {
+                BroadcastItemTypeComboBox.Visibility = Visibility.Visible;
+                BroadcastItemTypeText.Visibility = Visibility.Collapsed;
+                BroadcastItemTypeComboBox.SelectedIndex = 0;
+            }
+            else if (_isAdvertisingMode)
             {
                 Title = "Добавить рекламный ролик";
                 PartsCountLabel.Text = "Количество дубликатов:";
@@ -48,6 +56,13 @@ namespace OnAir.Views
                 RightsTextBox.Text = item.Rights ?? "";
                 CustomerTextBox.Text = item.Customer ?? "";
                 BroadcastItemTypeText.Text = item.BroadcastItemType.ToString();
+                if (_isAdmin)
+                {
+                    if (item.BroadcastItemType == BroadcastItemType.Advertising)
+                        BroadcastItemTypeComboBox.SelectedIndex = 1;
+                    else
+                        BroadcastItemTypeComboBox.SelectedIndex = 0;
+                }
                 
                 // Установка значений длительности
                 HoursTextBox.Text = item.Duration.Hours.ToString();
@@ -107,6 +122,18 @@ namespace OnAir.Views
                 var duration = new TimeSpan(hours, minutes, 0);
                 var ageLimit = int.Parse(((ComboBoxItem)AgeLimitComboBox.SelectedItem).Content.ToString().TrimEnd('+'));
 
+                BroadcastItemType itemType = BroadcastItemType.Default;
+                if (_isAdmin)
+                {
+                    var selected = BroadcastItemTypeComboBox.SelectedItem as ComboBoxItem;
+                    if (selected != null && selected.Tag != null && selected.Tag.ToString() == "Advertising")
+                        itemType = BroadcastItemType.Advertising;
+                }
+                else if (_isAdvertisingMode)
+                {
+                    itemType = BroadcastItemType.Advertising;
+                }
+
                 // Создаем элементы
                 for (int i = 0; i < partsCount; i++)
                 {
@@ -115,12 +142,12 @@ namespace OnAir.Views
                         Title = TitleTextBox.Text,
                         Description = DescriptionTextBox.Text,
                         Series = !string.IsNullOrWhiteSpace(SeriesTextBox.Text) ? int.Parse(SeriesTextBox.Text) : null,
-                        Part = _isAdvertisingMode ? 1 : i + 1, // Для рекламы всегда часть = 1
+                        Part = (_isAdvertisingMode || itemType == BroadcastItemType.Advertising) ? 1 : i + 1, // Для рекламы всегда часть = 1
                         Rights = RightsTextBox.Text,
                         Customer = CustomerTextBox.Text,
                         Duration = duration,
                         AgeLimit = ageLimit,
-                        BroadcastItemType = _isAdvertisingMode ? BroadcastItemType.Advertising : BroadcastItemType.Default
+                        BroadcastItemType = itemType
                     };
 
                     if (_item != null && i == 0)

@@ -61,7 +61,7 @@ namespace OnAir.Views
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            var window = new AddBroadcastItemWindow(isAdvertisingMode: _isAdvertisingMode);
+            var window = new AddBroadcastItemWindow(isAdvertisingMode: _isAdvertisingMode, isAdmin: _isAdminMode);
             if (window.ShowDialog() == true)
             {
                 if (_isAdvertisingMode)
@@ -87,7 +87,7 @@ namespace OnAir.Views
                 return;
             }
 
-            var editWindow = new AddBroadcastItemWindow(selectedItem, _isAdvertisingMode);
+            var editWindow = new AddBroadcastItemWindow(selectedItem, _isAdvertisingMode, _isAdminMode);
             if (editWindow.ShowDialog() == true)
             {
                 LoadItems();
