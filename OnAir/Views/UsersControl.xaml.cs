@@ -1,12 +1,13 @@
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using OnAir.Models;
 
 namespace OnAir.Views
 {
-    public partial class UserManagementWindow : Window
+    public partial class UsersControl : UserControl
     {
-        public UserManagementWindow()
+        public UsersControl()
         {
             InitializeComponent();
             LoadUsers();
@@ -16,8 +17,8 @@ namespace OnAir.Views
         {
             using (var db = new AppDbContext())
             {
-                var temp = db.Users.ToList();
-                UsersDataGrid.ItemsSource = temp;
+                var users = db.Users.ToList();
+                UsersDataGrid.ItemsSource = users;
             }
         }
 

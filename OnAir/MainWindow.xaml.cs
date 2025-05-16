@@ -19,141 +19,96 @@ namespace OnAir
     public partial class MainWindow : Window
     {
         private readonly User _currentUser;
+        private UsersControl _usersControl;
+        private BroadcastItemsControl _broadcastItemsControl;
+        private BroadcastingScheduleControl _scheduleControl;
 
         public MainWindow(User user)
         {
             InitializeComponent();
             _currentUser = user;
-            InitializeUI();
-        }
+            SetUserInfo();
 
-        private void InitializeUI()
-        {
-            // Set user info
-            UserInfoTextBlock.Text = $"{_currentUser.FullName} ({_currentUser.Role})";
-
-            // Load role-specific content
+            // Выбор стартового контента по роли
             switch (_currentUser.Role)
             {
                 case UserRole.Admin:
-                    LoadAdminContent();
+                    ShowUsersControl();
                     break;
                 case UserRole.AdvertisingWorker:
-                    LoadAdvertisingContent();
+                    ShowBroadcastItemsControl();
                     break;
                 case UserRole.BroadcastingWorker:
-                    LoadBroadcastingContent();
+                    ScheduleNavButton.Visibility = Visibility.Visible;
+                    ScheduleNavButton_Click(null, null);
+                    break;
+                default:
+                    // Можно показать заглушку или ничего
                     break;
             }
         }
 
-        private void LoadAdminContent()
+        private void SetUserInfo()
         {
-            var adminPanel = new StackPanel();
-            
-            // Add admin-specific controls here
-            var title = new System.Windows.Controls.TextBlock
-            {
-                Text = "Панель администратора",
-                FontSize = 24,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            adminPanel.Children.Add(title);
+            // Аватарка — первая буква username (заглавная)
+            if (!string.IsNullOrEmpty(_currentUser.Username))
+                AvatarTextBlock.Text = _currentUser.Username.Substring(0, 1).ToUpper();
+            else
+                AvatarTextBlock.Text = "?";
+            // Имя пользователя
+            UserNameTextBlock.Text = _currentUser.FullName ?? _currentUser.Username;
 
-            var manageUsersButton = new Button
-            {
-                Content = "Управление пользователями",
-                Margin = new Thickness(0, 10, 0, 0),
-                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
-            };
-            manageUsersButton.Click += (s, e) => new UserManagementWindow().Show();
-            adminPanel.Children.Add(manageUsersButton);
+            // Показываем нужные кнопки в зависимости от роли
+            UsersNavButton.Visibility = Visibility.Collapsed;
+            ItemsNavButton.Visibility = Visibility.Collapsed;
+            ScheduleNavButton.Visibility = Visibility.Collapsed;
 
-            var manageItemsButton = new Button
+            switch (_currentUser.Role)
             {
-                Content = "Управление элементами вещания",
-                Margin = new Thickness(0, 10, 0, 0),
-                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
-            };
-            manageItemsButton.Click += (s, e) =>
-            {
-                var broadcastItemsWindow = new BroadcastItemsWindow(isAdminMode: true);
-                broadcastItemsWindow.Owner = this;
-                broadcastItemsWindow.ShowDialog();
-            };
-            adminPanel.Children.Add(manageItemsButton);
-
-            // Add more admin controls as needed
-
-            RoleContentControl.Content = adminPanel;
+                case UserRole.Admin:
+                    UsersNavButton.Visibility = Visibility.Visible;
+                    ItemsNavButton.Visibility = Visibility.Visible;
+                    break;
+                case UserRole.AdvertisingWorker:
+                    ItemsNavButton.Visibility = Visibility.Visible;
+                    break;
+                case UserRole.BroadcastingWorker:
+                    ItemsNavButton.Visibility = Visibility.Visible;
+                    ScheduleNavButton.Visibility = Visibility.Visible;
+                    break;
+            }
         }
 
-        private void LoadAdvertisingContent()
+        private void UsersNavButton_Click(object sender, RoutedEventArgs e)
         {
-            var panel = new StackPanel { Margin = new Thickness(20) };
-            
-            var title = new TextBlock
-            {
-                Text = "Панель работника рекламного отдела",
-                FontSize = 24,
-                Margin = new Thickness(0, 0, 0, 20),
-            };
-            panel.Children.Add(title);
-
-            var broadcastItemsButton = new Button
-            {
-                Content = "Управление элементами вещания",
-                Margin = new Thickness(0, 0, 0, 10),
-                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
-            };
-            broadcastItemsButton.Click += (s, e) =>
-            {
-                var window = new BroadcastItemsWindow(true); // true означает, что окно открыто из рекламного отдела
-                window.Owner = this;
-                window.ShowDialog();
-            };
-            panel.Children.Add(broadcastItemsButton);
-
-            RoleContentControl.Content = panel;
+            ShowUsersControl();
         }
 
-        private void LoadBroadcastingContent()
+        private void ItemsNavButton_Click(object sender, RoutedEventArgs e)
         {
-            var broadcastingPanel = new StackPanel();
-            
-            // Add broadcasting-specific controls here
-            var title = new System.Windows.Controls.TextBlock
-            {
-                Text = "Панель работника вещания",
-                FontSize = 24,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            broadcastingPanel.Children.Add(title);
+            ShowBroadcastItemsControl();
+        }
 
-            var manageScheduleButton = new Button
-            {
-                Content = "Управление расписанием",
-                Margin = new Thickness(0, 10, 0, 0),
-                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
-            };
-            manageScheduleButton.Click += (s, e) => new BroadcastingScheduleWindow().Show();
-            broadcastingPanel.Children.Add(manageScheduleButton);
+        private void ShowUsersControl()
+        {
+            if (_usersControl == null)
+                _usersControl = new UsersControl();
+            MainContentControl.Content = _usersControl;
+        }
 
-            var manageItemsButton = new Button
+        private void ShowBroadcastItemsControl()
+        {
+            if (_broadcastItemsControl == null)
             {
-                Content = "Управление элементами вещания",
-                Margin = new Thickness(0, 10, 0, 0),
-                Style = (Style)Application.Current.FindResource("ModernButtonStyle")
-            };
-            manageItemsButton.Click += (s, e) =>
-            {
-                var broadcastItemsWindow = new BroadcastItemsWindow();
-                broadcastItemsWindow.Owner = this;
-                broadcastItemsWindow.ShowDialog();
-            };
-            broadcastingPanel.Children.Add(manageItemsButton);
-
-            RoleContentControl.Content = broadcastingPanel;
+                // Передаем режим в зависимости от роли
+                if (_currentUser.Role == UserRole.Admin)
+                    _broadcastItemsControl = new BroadcastItemsControl(BroadcastItemsMode.Admin);
+                else if (_currentUser.Role == UserRole.AdvertisingWorker)
+                    _broadcastItemsControl = new BroadcastItemsControl(BroadcastItemsMode.Advertising);
+                else
+                    _broadcastItemsControl = new BroadcastItemsControl(BroadcastItemsMode.Broadcasting);
+            }
+            MainContentControl.Content = _broadcastItemsControl;
         }
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
@@ -161,6 +116,13 @@ namespace OnAir
             var loginWindow = new LoginWindow();
             loginWindow.Show();
             this.Close();
+        }
+
+        private void ScheduleNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_scheduleControl == null)
+                _scheduleControl = new BroadcastingScheduleControl();
+            MainContentControl.Content = _scheduleControl;
         }
     }
 }

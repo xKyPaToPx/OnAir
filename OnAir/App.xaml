@@ -3,10 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:OnAir">
     <Application.Resources>
-        <ResourceDictionary>
+        <ResourceDictionary x:Key="AppResources">
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/FreshTheme.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernCardBlockStyle.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernCardBlockTextAndGridStyle.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernButtonStyle.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernNavButtonStyle.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernTextBoxStyle.xaml"/>
+                <ResourceDictionary Source="/Themes/ModernComboBoxStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Градиент для фона приложения -->
+            <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1A237E" Offset="0"/>
+                <GradientStop Color="#0D47A1" Offset="1"/>
+            </LinearGradientBrush>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

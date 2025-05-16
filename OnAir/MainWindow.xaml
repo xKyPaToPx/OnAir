@@ -7,57 +7,47 @@
         mc:Ignorable="d"
         Title="OnAir - Система управления" Height="600" Width="1000"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource AppBackgroundGradient}">
-    <Grid Background="{DynamicResource AppBackgroundGradient}">
-        <Border Margin="40"
-                Padding="20"
-                CornerRadius="16"
-                Background="{DynamicResource PanelBrush}">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.35"/>
-            </Border.Effect>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        Background="{DynamicResource AppBackgroundGradient}"
+        WindowState="Maximized">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                <!-- Header -->
-                <Border Padding="10" BorderThickness="0,0,0,2" BorderBrush="{StaticResource PrimaryBrush}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Text="OnAir - Система управления"
-                                 Style="{StaticResource HeaderText}"
-                                 VerticalAlignment="Center"/>
-                        
-                        <StackPanel Grid.Column="1" 
-                                  Orientation="Horizontal" 
-                                  VerticalAlignment="Center">
-                            <TextBlock x:Name="UserInfoTextBlock"
-                                     Margin="0,0,10,0"
-                                     VerticalAlignment="Center"/>
-                            <Button x:Name="LogoutButton"
-                                    Content="Выйти"
-                                    Click="LogoutButton_Click"
-                                    Style="{StaticResource ModernButtonStyle}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+        <!-- Левая панель -->
+        <Border Grid.Column="0">
+            <Border.Background>
+                <ImageBrush ImageSource="/Images/bgmenu.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
+            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0">
+                <!-- Аватар и имя -->
+                <StackPanel Orientation="Horizontal" Margin="20,20,0,20" VerticalAlignment="Top">
+                    <Border Width="32" Height="32" CornerRadius="16" Background="#E3E6F0" VerticalAlignment="Center">
+                        <TextBlock x:Name="AvatarTextBlock" Text="A" FontWeight="Bold" FontSize="18" Foreground="#2962A6" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="UserNameTextBlock" Text="Username" Foreground="White" FontSize="14" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
 
-                <!-- Main Content -->
-                <Grid Grid.Row="1" Margin="20">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                <!-- Кнопки навигации -->
+                <StackPanel Margin="20,20,20,0" VerticalAlignment="Top">
+                    <Button x:Name="UsersNavButton" Content="Пользователи" Height="36" Margin="0,0,0,10" Click="UsersNavButton_Click" Visibility="Collapsed" Style="{StaticResource ModernNavButtonStyle}"/>
+                    <Button x:Name="ItemsNavButton" Content="Элементы расписания" Height="36" Margin="0,0,0,10" Click="ItemsNavButton_Click" Visibility="Collapsed" Style="{StaticResource ModernNavButtonStyle}"/>
+                    <Button x:Name="ScheduleNavButton" Content="Управление расписанием" Height="36" Margin="0,0,0,10" Click="ScheduleNavButton_Click" Visibility="Collapsed" Style="{StaticResource ModernNavButtonStyle}"/>
+                </StackPanel>
 
-                    <!-- Role-specific content will be loaded here -->
-                    <ContentControl x:Name="RoleContentControl" Grid.Row="0"/>
-                </Grid>
-            </Grid>
+                <StackPanel VerticalAlignment="Bottom" Margin="20,0,20,20">
+                    <Button x:Name="LogoutButton" Content="Выход" Height="36" Click="LogoutButton_Click" Style="{StaticResource ModernNavButtonStyle}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Основная область -->
+        <Border Grid.Column="1">
+            <Border.Background>
+                <ImageBrush ImageSource="/Images/bgmain.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
+            <ContentControl x:Name="MainContentControl"/>
         </Border>
     </Grid>
 </Window>

@@ -1,33 +1,29 @@
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using OnAir.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace OnAir.Views
 {
-    public partial class BroadcastItemsWindow : Window
+    public enum BroadcastItemsMode
+    {
+        Admin,
+        Advertising,
+        Broadcasting
+    }
+
+    public partial class BroadcastItemsControl : UserControl
     {
         private readonly AppDbContext _context;
-        private readonly bool _isAdvertisingMode;
-        private readonly bool _isAdminMode;
+        private readonly BroadcastItemsMode _mode;
 
-        public BroadcastItemsWindow(bool isAdvertisingMode = false, bool isAdminMode = false)
+        public BroadcastItemsControl(BroadcastItemsMode mode = BroadcastItemsMode.Admin)
         {
             InitializeComponent();
             _context = new AppDbContext();
-            _isAdvertisingMode = isAdvertisingMode;
-            _isAdminMode = isAdminMode;
-
-            if (_isAdvertisingMode)
-            {
-                Title = "Управление рекламными элементами";
-            }
-            else if (_isAdminMode)
-            {
-                Title = "Управление элементами вещания (Администратор)";
-            }
-
+            _mode = mode;
             LoadItems();
         }
 
@@ -40,45 +36,38 @@ namespace OnAir.Views
                     .OrderByDescending(i => i.BroadcastItemType)
                     .ToList();
 
-                if (_isAdvertisingMode)
+                if (_mode == BroadcastItemsMode.Advertising)
                 {
-                    ItemsDataGrid.ItemsSource = items.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising);
+                    ItemsDataGrid.ItemsSource = items.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising).ToList();
                 }
-                else if (!_isAdminMode)
+                else if (_mode == BroadcastItemsMode.Broadcasting)
                 {
-                    ItemsDataGrid.ItemsSource = items.Where(i => i.BroadcastItemType != BroadcastItemType.Advertising);
+                    ItemsDataGrid.ItemsSource = items.Where(i => i.BroadcastItemType != BroadcastItemType.Advertising).ToList();
                 }
-                else
+                else // Admin
                 {
                     ItemsDataGrid.ItemsSource = items;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при загрузке данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при загрузке элементов: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        private void AddItem_Click(object sender, RoutedEventArgs e)
         {
-            var window = new AddBroadcastItemWindow(isAdvertisingMode: _isAdvertisingMode, isAdmin: _isAdminMode);
+            var window = new AddBroadcastItemWindow(
+                isAdvertisingMode: _mode == BroadcastItemsMode.Advertising,
+                isAdmin: _mode == BroadcastItemsMode.Admin
+            );
             if (window.ShowDialog() == true)
             {
-                if (_isAdvertisingMode)
-                {
-                    // Устанавливаем тип реклама для новых элементов в режиме рекламного отдела
-                    var lastItem = _context.BroadcastItems.OrderByDescending(i => i.Id).FirstOrDefault();
-                    if (lastItem != null)
-                    {
-                        lastItem.BroadcastItemType = BroadcastItemType.Advertising;
-                        _context.SaveChanges();
-                    }
-                }
                 LoadItems();
             }
         }
 
-        private void EditButton_Click(object sender, RoutedEventArgs e)
+        private void EditItem_Click(object sender, RoutedEventArgs e)
         {
             var selectedItem = ItemsDataGrid.SelectedItem as BroadcastItem;
             if (selectedItem == null)
@@ -86,15 +75,17 @@ namespace OnAir.Views
                 MessageBox.Show("Пожалуйста, выберите элемент для редактирования", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            var editWindow = new AddBroadcastItemWindow(selectedItem, _isAdvertisingMode, _isAdminMode);
+            var editWindow = new AddBroadcastItemWindow(selectedItem,
+                isAdvertisingMode: _mode == BroadcastItemsMode.Advertising,
+                isAdmin: _mode == BroadcastItemsMode.Admin
+            );
             if (editWindow.ShowDialog() == true)
             {
                 LoadItems();
             }
         }
 
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        private void DeleteItem_Click(object sender, RoutedEventArgs e)
         {
             var selectedItem = ItemsDataGrid.SelectedItem as BroadcastItem;
             if (selectedItem == null)
@@ -102,13 +93,11 @@ namespace OnAir.Views
                 MessageBox.Show("Пожалуйста, выберите элемент для удаления", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             var result = MessageBox.Show(
                 $"Вы уверены, что хотите удалить элемент '{selectedItem.Title}'?",
                 "Подтверждение удаления",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
-
             if (result == MessageBoxResult.Yes)
             {
                 try
@@ -119,7 +108,7 @@ namespace OnAir.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при удалении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Ошибка при удалении элемента: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

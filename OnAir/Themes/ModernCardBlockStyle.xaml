@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ImageBrush x:Key="CardBlockImageBrush" ImageSource="/Images/bgmenu.jpg" Stretch="UniformToFill" Opacity="0.75"/>
+    <Style x:Key="ModernCardBlockStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBlockImageBrush}"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="8"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.10"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary> 
