@@ -1,0 +1,120 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Современный стиль для TextBox -->
+    <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="Foreground" Value="#222"/>
+        <Setter Property="BorderBrush" Value="#1E90FF"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <ScrollViewer x:Name="PART_ContentHost"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="#1976D2"/>
+                <Setter Property="Background" Value="#44FFFFFF"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="#AAA"/>
+                <Setter Property="Background" Value="#EEE"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Современный стиль для PasswordBox -->
+    <Style x:Key="ModernPasswordBoxStyle" TargetType="PasswordBox">
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="Foreground" Value="#222"/>
+        <Setter Property="BorderBrush" Value="#1E90FF"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <ScrollViewer x:Name="PART_ContentHost"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="#1976D2"/>
+                <Setter Property="Background" Value="#44FFFFFF"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="#AAA"/>
+                <Setter Property="Background" Value="#EEE"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ModernTextBoxWhiteStyle" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+
+    <!-- Современный стиль для DatePicker -->
+    <Style x:Key="ModernDatePickerStyle" TargetType="DatePicker">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="#22FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#1E90FF"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePicker">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                        <Grid>
+                            <DatePickerTextBox x:Name="PART_TextBox"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               HorizontalContentAlignment="Stretch"
+                                               VerticalContentAlignment="Center"/>
+                            <Button x:Name="PART_Button"
+                                    Width="32"
+                                    Height="32"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,4,0"
+                                    Padding="0"
+                                    Background="Transparent"
+                                    BorderBrush="{x:Null}"
+                                    BorderThickness="0"
+                                    Focusable="False"
+                                    Cursor="Hand">
+                                <Path Data="M0,0 L1,0 1,1 0,1Z" Fill="#1E90FF" Width="16" Height="16"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary> 

@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
-using System.Windows.Media;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
 
 namespace OnAir.Views
 {
-    public partial class BroadcastingScheduleWindow : Window
+    public partial class BroadcastingScheduleControl : UserControl
     {
         private readonly AppDbContext _context;
         private DateTime _selectedDate;
@@ -20,7 +20,7 @@ namespace OnAir.Views
         private readonly Regex _timeRegex = new Regex(@"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
         private TimeSpan _startTime;
 
-        public BroadcastingScheduleWindow()
+        public BroadcastingScheduleControl()
         {
             InitializeComponent();
             _context = new AppDbContext();
@@ -36,7 +36,6 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
             string newText = textBox.Text.Insert(textBox.CaretIndex, e.Text);
             if (!_timeRegex.IsMatch(newText))
             {
@@ -48,10 +47,9 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
             if (!_timeRegex.IsMatch(textBox.Text))
             {
-                MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 07:00)", 
+                MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 07:00)",
                     "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
                 textBox.Text = "07:00";
                 _startTime = TimeSpan.Parse("07:00");
@@ -67,43 +65,31 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
-            // Получаем текущий текст и добавляем новый символ
             string newText = textBox.Text;
             int caretIndex = textBox.CaretIndex;
-            
-            // Если это двоеточие
             if (e.Text == ":")
             {
-                // Если уже есть двоеточие, запрещаем ввод
                 if (newText.Contains(":"))
                 {
                     e.Handled = true;
                     return;
                 }
-                // Если меньше двух цифр, запрещаем ввод
                 if (newText.Count(char.IsDigit) < 2)
                 {
                     e.Handled = true;
                     return;
                 }
             }
-            // Если это не цифра и не двоеточие
             else if (!char.IsDigit(e.Text[0]))
             {
                 e.Handled = true;
                 return;
             }
-
-            // Проверяем, что после ввода получится корректное время
             newText = newText.Insert(caretIndex, e.Text);
-            
-            // Если текст пустой или содержит только цифры, разрешаем ввод
             if (string.IsNullOrEmpty(newText) || newText.All(c => char.IsDigit(c) || c == ':'))
             {
                 return;
             }
-
             if (!_timeRegex.IsMatch(newText))
             {
                 e.Handled = true;
@@ -114,10 +100,9 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
             if (!_timeRegex.IsMatch(textBox.Text))
             {
-                MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 07:00)", 
+                MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 07:00)",
                     "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
                 textBox.Text = _startTime.ToString(@"hh\:mm");
             }
@@ -132,15 +117,11 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
             string newText = textBox.Text.Insert(textBox.CaretIndex, e.Text);
-
-            // Если текст пустой или содержит только цифры и двоеточие, разрешаем ввод
             if (string.IsNullOrEmpty(newText) || newText.All(c => char.IsDigit(c) || c == ':'))
             {
                 return;
             }
-
             if (!_timeRegex.IsMatch(newText))
             {
                 e.Handled = true;
@@ -151,14 +132,12 @@ namespace OnAir.Views
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
-
             if (!_timeRegex.IsMatch(textBox.Text))
             {
                 MessageBox.Show("Пожалуйста, введите время в формате ЧЧ:ММ (например, 23:00)",
                     "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
                 textBox.Text = "";
             }
-            // Здесь можно добавить сохранение значения в модель Broadcast, если нужно
         }
 
         private void UpdateScheduleTimes()
@@ -180,12 +159,10 @@ namespace OnAir.Views
             var selectedItem = AvailableItemsListBox.SelectedItem as BroadcastItem;
             if (selectedItem == null)
             {
-                MessageBox.Show("Пожалуйста, выберите элемент для добавления в расписание", 
+                MessageBox.Show("Пожалуйста, выберите элемент для добавления в расписание",
                     "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            // Удаляем из доступных и добавляем в расписание (только в памяти)
             var newBroadcast = new Broadcast
             {
                 Date = DateOnly.FromDateTime(_selectedDate),
@@ -195,8 +172,6 @@ namespace OnAir.Views
             var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
             availableItems.Remove(selectedItem);
             AvailableItemsListBox.ItemsSource = availableItems;
-
-            // Пересчитываем время для всех элементов
             UpdateScheduleTimes();
         }
 
@@ -205,11 +180,9 @@ namespace OnAir.Views
             try
             {
                 var date = DateOnly.FromDateTime(_selectedDate);
-                // Находим Broadcast на выбранную дату
                 var broadcast = _context.Broadcasts
                     .Include(b => b.Items)
                     .FirstOrDefault(b => b.Date == date);
-
                 _schedule.Clear();
                 List<BroadcastItem> scheduledItems = new List<BroadcastItem>();
                 if (broadcast != null)
@@ -223,18 +196,14 @@ namespace OnAir.Views
                             Items = new List<BroadcastItem> { item }
                         });
                     }
-                    // Загружаем сохраненное время начала
                     _startTime = broadcast.StartTime;
                     StartTimeTextBox.Text = _startTime.ToString(@"hh\:mm");
                 }
-
-                // Остальные элементы — в доступные
                 var scheduledIds = scheduledItems.Select(i => i.Id).ToList();
                 var availableItems = _context.BroadcastItems
                     .Where(i => i.BroadcastId.Equals(null))
                     .ToList();
                 AvailableItemsListBox.ItemsSource = availableItems;
-
                 UpdateScheduleTimes();
             }
             catch (Exception ex)
@@ -248,12 +217,10 @@ namespace OnAir.Views
             var selectedBroadcast = ScheduleListBox.SelectedItem as Broadcast;
             if (selectedBroadcast == null)
             {
-                MessageBox.Show("Пожалуйста, выберите элемент для удаления из расписания", 
+                MessageBox.Show("Пожалуйста, выберите элемент для удаления из расписания",
                     "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            // Удаляем из расписания и возвращаем элемент в доступные (только в памяти)
             _schedule.Remove(selectedBroadcast);
             var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
             if (selectedBroadcast.Items != null && selectedBroadcast.Items.Count > 0)
@@ -261,7 +228,6 @@ namespace OnAir.Views
                 availableItems.Add(selectedBroadcast.Items[0]);
             }
             AvailableItemsListBox.ItemsSource = availableItems;
-
             UpdateScheduleTimes();
         }
 
@@ -276,7 +242,6 @@ namespace OnAir.Views
 
         private void ScheduleDatePicker_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Позволяем пользователю вводить дату, не проверяя формат при каждом изменении
             if (DateTime.TryParse(ScheduleDatePicker.Text, out DateTime date))
             {
                 _selectedDate = date;
@@ -286,10 +251,9 @@ namespace OnAir.Views
 
         private void ScheduleDatePicker_LostFocus(object sender, RoutedEventArgs e)
         {
-            // Проверяем формат даты только когда пользователь закончил ввод
             if (!DateTime.TryParse(ScheduleDatePicker.Text, out DateTime date))
             {
-                MessageBox.Show("Пожалуйста, введите дату в формате дд.мм.гггг", 
+                MessageBox.Show("Пожалуйста, введите дату в формате дд.мм.гггг",
                     "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
                 ScheduleDatePicker.Text = _selectedDate.ToString("dd.MM.yyyy");
             }
@@ -362,12 +326,10 @@ namespace OnAir.Views
                 var item = e.Data.GetData(typeof(BroadcastItem)) as BroadcastItem;
                 if (item != null)
                 {
-                    // Если перетаскивается BroadcastItem обратно в доступные — ничего не делаем (он уже там)
                     return;
                 }
                 else
                 {
-                    // Если перетаскивается Broadcast из расписания в доступные
                     var broadcast = e.Data.GetData(typeof(Broadcast)) as Broadcast;
                     if (broadcast != null)
                     {
@@ -410,10 +372,8 @@ namespace OnAir.Views
         private void ScheduleListBox_Drop(object sender, DragEventArgs e)
         {
             if (_schedule == null) return;
-
             try
             {
-                // Если перетаскивается BroadcastItem из доступных в расписание
                 var droppedItem = e.Data.GetData(typeof(BroadcastItem)) as BroadcastItem;
                 if (droppedItem != null)
                 {
@@ -429,30 +389,20 @@ namespace OnAir.Views
                     UpdateScheduleTimes();
                     return;
                 }
-
-                // Если перетаскивается Broadcast внутри расписания (смена порядка)
                 var droppedBroadcast = e.Data.GetData(typeof(Broadcast)) as Broadcast;
                 if (droppedBroadcast != null)
                 {
-                    // Получаем позицию мыши
                     var point = e.GetPosition(ScheduleListBox);
                     var element = ScheduleListBox.InputHitTest(point) as DependencyObject;
-
-                    // Ищем DataGridRow под курсором
                     while (element != null && !(element is DataGridRow))
                         element = VisualTreeHelper.GetParent(element);
-
-                    // Если не на элемент, не делаем ничего
                     if (!(element is DataGridRow dataGridRow))
                         return;
-
                     var targetBroadcast = dataGridRow.DataContext as Broadcast;
-
                     if (droppedBroadcast != null && targetBroadcast != null)
                     {
                         int removedIdx = _schedule.IndexOf(droppedBroadcast);
                         int targetIdx = _schedule.IndexOf(targetBroadcast);
-
                         if (removedIdx < targetIdx)
                         {
                             _schedule.Insert(targetIdx + 1, droppedBroadcast);
@@ -482,66 +432,47 @@ namespace OnAir.Views
             try
             {
                 var date = DateOnly.FromDateTime(_selectedDate);
-
-                // Находим существующее расписание на этот день
                 var existingBroadcast = _context.Broadcasts
                     .Include(b => b.Items)
                     .FirstOrDefault(b => b.Date == date);
-
                 if (existingBroadcast != null)
                 {
-                    // Обновляем время начала
                     existingBroadcast.StartTime = _startTime;
-
-                    // Обновляем планируемое время окончания
                     if (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
                     {
                         existingBroadcast.PlannedEndTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
                     }
-                    else
+                    existingBroadcast.Items.Clear();
+                    foreach (var b in _schedule)
                     {
-                        existingBroadcast.PlannedEndTime = null;
-                    }
-
-                    // Открепляем все существующие элементы
-                    var existingItems = _context.BroadcastItems.Where(i => i.BroadcastId == existingBroadcast.Id).ToList();
-                    foreach (var item in existingItems)
-                    {
-                        item.BroadcastId = null;
-                        item.IndexInBroadcast = 0;
+                        if (b.Items != null && b.Items.Count > 0)
+                        {
+                            existingBroadcast.Items.Add(b.Items[0]);
+                        }
                     }
                 }
                 else
                 {
-                    // Создаём новый Broadcast
-                    existingBroadcast = new Broadcast
+                    var newBroadcast = new Broadcast
                     {
                         Date = date,
                         StartTime = _startTime,
-                        PlannedEndTime = (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+                        PlannedEndTime = !string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text)
                             ? TimeSpan.Parse(PlannedEndTimeTextBox.Text)
-                            : null
+                            : (TimeSpan?)null,
+                        Items = new List<BroadcastItem>()
                     };
-                    _context.Broadcasts.Add(existingBroadcast);
-                }
-                _context.SaveChanges();
-
-                // Привязываем все элементы расписания к Broadcast и выставляем IndexInBroadcast
-                var allItems = _schedule.SelectMany(b => b.Items ?? new List<BroadcastItem>()).ToList();
-                for (int i = 0; i < allItems.Count; i++)
-                {
-                    var item = allItems[i];
-                    var dbItem = _context.BroadcastItems.FirstOrDefault(it => it.Id == item.Id);
-                    if (dbItem != null)
+                    foreach (var b in _schedule)
                     {
-                        dbItem.BroadcastId = existingBroadcast.Id;
-                        dbItem.IndexInBroadcast = i;
+                        if (b.Items != null && b.Items.Count > 0)
+                        {
+                            newBroadcast.Items.Add(b.Items[0]);
+                        }
                     }
+                    _context.Broadcasts.Add(newBroadcast);
                 }
                 _context.SaveChanges();
-
                 MessageBox.Show("Расписание успешно сохранено!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                LoadData();
             }
             catch (Exception ex)
             {
@@ -551,200 +482,20 @@ namespace OnAir.Views
 
         private void AutoFillButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            // Пример автозаполнения: просто добавляем все доступные элементы в расписание
+            var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
+            foreach (var item in availableItems.ToList())
             {
-                // Получаем планируемое время окончания
-                TimeSpan? plannedEndTime = null;
-                if (!string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+                var newBroadcast = new Broadcast
                 {
-                    plannedEndTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
-                }
-
-                // Получаем список всех доступных элементов из базы данных
-                var allAvailableItems = _context.BroadcastItems
-                    .Where(i => i.BroadcastId == null)
-                    .ToList();
-
-                if (!allAvailableItems.Any())
-                {
-                    MessageBox.Show("Нет доступных элементов для добавления в расписание", 
-                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // Получаем список рекламных блоков
-                var adItems = allAvailableItems.Where(i => i.BroadcastItemType == BroadcastItemType.Advertising).ToList();
-                if (!adItems.Any())
-                {
-                    MessageBox.Show("Нет доступных рекламных блоков", 
-                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // Очищаем текущее расписание
-                _schedule.Clear();
-
-                // Разделяем элементы на временные и обычные
-                var timeBasedItems = new List<BroadcastItem>();
-                var regularItems = new List<BroadcastItem>();
-
-                foreach (var item in allAvailableItems.Where(i => i.BroadcastItemType != BroadcastItemType.Advertising))
-                {
-                    // Проверяем, содержит ли название время
-                    var timeMatch = Regex.Match(item.Title, @"(\d{1,2}:\d{2})");
-                    if (timeMatch.Success)
-                    {
-                        timeBasedItems.Add(item);
-                    }
-                    else
-                    {
-                        regularItems.Add(item);
-                    }
-                }
-
-                // Группируем обычные элементы по названию и серии
-                var groupedPrograms = regularItems
-                    .GroupBy(i => new { i.Title, i.Series })
-                    .ToList();
-
-                // Перемешиваем группы программ случайным образом
-                var rnd = new Random();
-                groupedPrograms = groupedPrograms.OrderBy(x => rnd.Next()).ToList();
-
-                // Сортируем timeBasedItems по времени
-                var sortedTimeBased = timeBasedItems.OrderBy(i => {
-                    var timeMatch = Regex.Match(i.Title, @"(\d{1,2}:\d{2})");
-                    return TimeSpan.Parse(timeMatch.Groups[1].Value);
-                }).ToList();
-
-                TimeSpan currentTime = _startTime;
-                var usedTitles = new HashSet<string>();
-
-                // Индекс для timeBasedItems
-                int timeBasedIndex = 0;
-                while ((plannedEndTime == null || currentTime < plannedEndTime) && (groupedPrograms.Any() || timeBasedIndex < sortedTimeBased.Count))
-                {
-                    // Если есть программа с фиксированным временем, и пора её ставить
-                    if (timeBasedIndex < sortedTimeBased.Count)
-                    {
-                        var timeItem = sortedTimeBased[timeBasedIndex];
-                        var timeMatch = Regex.Match(timeItem.Title, @"(\d{1,2}:\d{2})");
-                        var targetTime = TimeSpan.Parse(timeMatch.Groups[1].Value);
-                        if (currentTime < targetTime && groupedPrograms.Any())
-                        {
-                            // Ставим обычную программу до фиксированной
-                            var group = groupedPrograms.First();
-                            var parts = group.OrderBy(i => i.Part).ToList();
-                            foreach (var part in parts)
-                            {
-                                if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value) break;
-                                _schedule.Add(new Broadcast
-                                {
-                                    Date = DateOnly.FromDateTime(_selectedDate),
-                                    StartTime = currentTime,
-                                    Items = new List<BroadcastItem> { part }
-                                });
-                                currentTime = currentTime.Add(part.Duration);
-                                // Реклама
-                                var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == part.AgeLimit);
-                                if (matchingAd != null)
-                                {
-                                    _schedule.Add(new Broadcast
-                                    {
-                                        Date = DateOnly.FromDateTime(_selectedDate),
-                                        StartTime = currentTime,
-                                        Items = new List<BroadcastItem> { matchingAd }
-                                    });
-                                    currentTime = currentTime.Add(matchingAd.Duration);
-                                }
-                            }
-                            groupedPrograms.RemoveAt(0);
-                            continue;
-                        }
-                        else if (currentTime <= targetTime)
-                        {
-                            // Ставим программу с фиксированным временем
-                            if (currentTime < targetTime)
-                                currentTime = targetTime;
-                            _schedule.Add(new Broadcast
-                            {
-                                Date = DateOnly.FromDateTime(_selectedDate),
-                                StartTime = currentTime,
-                                Items = new List<BroadcastItem> { timeItem }
-                            });
-                            currentTime = currentTime.Add(timeItem.Duration);
-                            // Реклама
-                            var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == timeItem.AgeLimit);
-                            if (matchingAd != null)
-                            {
-                                _schedule.Add(new Broadcast
-                                {
-                                    Date = DateOnly.FromDateTime(_selectedDate),
-                                    StartTime = currentTime,
-                                    Items = new List<BroadcastItem> { matchingAd }
-                                });
-                                currentTime = currentTime.Add(matchingAd.Duration);
-                            }
-                            timeBasedIndex++;
-                            continue;
-                        }
-                        else
-                        {
-                            // Уже пропустили время, просто идём дальше
-                            timeBasedIndex++;
-                            continue;
-                        }
-                    }
-                    // Если нет фиксированных программ или их время уже прошло — ставим обычные
-                    if (groupedPrograms.Any())
-                    {
-                        var group = groupedPrograms.First();
-                        var parts = group.OrderBy(i => i.Part).ToList();
-                        foreach (var part in parts)
-                        {
-                            if (plannedEndTime.HasValue && currentTime >= plannedEndTime.Value) break;
-                            _schedule.Add(new Broadcast
-                            {
-                                Date = DateOnly.FromDateTime(_selectedDate),
-                                StartTime = currentTime,
-                                Items = new List<BroadcastItem> { part }
-                            });
-                            currentTime = currentTime.Add(part.Duration);
-                            // Реклама
-                            var matchingAd = adItems.FirstOrDefault(a => a.AgeLimit == part.AgeLimit);
-                            if (matchingAd != null)
-                            {
-                                _schedule.Add(new Broadcast
-                                {
-                                    Date = DateOnly.FromDateTime(_selectedDate),
-                                    StartTime = currentTime,
-                                    Items = new List<BroadcastItem> { matchingAd }
-                                });
-                                currentTime = currentTime.Add(matchingAd.Duration);
-                            }
-                        }
-                        groupedPrograms.RemoveAt(0);
-                    }
-                    else
-                    {
-                        // Нет больше программ — выходим
-                        break;
-                    }
-                }
-
-                // Обновляем отображение
-                ScheduleListBox.Items.Refresh();
-
-                // Обновляем список доступных элементов
-                var scheduledItems = _schedule.SelectMany(b => b.Items).ToList();
-                var remainingItems = allAvailableItems.Where(i => !scheduledItems.Contains(i)).ToList();
-                AvailableItemsListBox.ItemsSource = remainingItems;
+                    Date = DateOnly.FromDateTime(_selectedDate),
+                    Items = new List<BroadcastItem> { item }
+                };
+                _schedule.Add(newBroadcast);
+                availableItems.Remove(item);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при автоматическом заполнении расписания: {ex.Message}", 
-                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            AvailableItemsListBox.ItemsSource = availableItems;
+            UpdateScheduleTimes();
         }
     }
 } 
