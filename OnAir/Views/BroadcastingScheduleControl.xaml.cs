@@ -482,10 +482,47 @@ namespace OnAir.Views
 
         private void AutoFillButton_Click(object sender, RoutedEventArgs e)
         {
-            // Пример автозаполнения: просто добавляем все доступные элементы в расписание
+            if (string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) || !_timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+            {
+                MessageBox.Show("Пожалуйста, укажите время окончания в формате ЧЧ:ММ (например, 23:00)",
+                    "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Clear current schedule and return items to available list
             var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
+            foreach (var broadcast in _schedule.ToList())
+            {
+                if (broadcast.Items != null && broadcast.Items.Count > 0)
+                {
+                    var item = broadcast.Items[0];
+                    item.BroadcastId = null; // Remove database binding
+                    availableItems.Add(item);
+                }
+            }
+            _schedule.Clear();
+            AvailableItemsListBox.ItemsSource = availableItems;
+
+            var endTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
+            var currentTime = _startTime;
+
             foreach (var item in availableItems.ToList())
             {
+                // Calculate next time after adding this item
+                var nextTime = currentTime.Add(item.Duration);
+
+                // Check if we've crossed midnight
+                bool isCrossingMidnight = currentTime > endTime;
+                bool isValidTime = isCrossingMidnight ? 
+                    (nextTime <= TimeSpan.FromHours(24) && currentTime <= TimeSpan.FromHours(24)) || 
+                    (nextTime <= endTime) :
+                    nextTime <= endTime;
+
+                if (!isValidTime)
+                {
+                    break;
+                }
+
                 var newBroadcast = new Broadcast
                 {
                     Date = DateOnly.FromDateTime(_selectedDate),
@@ -493,7 +530,9 @@ namespace OnAir.Views
                 };
                 _schedule.Add(newBroadcast);
                 availableItems.Remove(item);
+                currentTime = nextTime;
             }
+
             AvailableItemsListBox.ItemsSource = availableItems;
             UpdateScheduleTimes();
         }
