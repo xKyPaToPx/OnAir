@@ -20,6 +20,9 @@ namespace OnAir.Views
         private readonly Regex _timeRegex = new Regex(@"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
         private TimeSpan _startTime;
 
+        // Предполагаемая продолжительность рекламного блока. Вам может потребоваться настроить это.
+        private readonly TimeSpan AdvertisementDuration = TimeSpan.FromMinutes(1);
+
         public BroadcastingScheduleControl()
         {
             InitializeComponent();
@@ -482,20 +485,28 @@ namespace OnAir.Views
 
         private void AutoFillButton_Click(object sender, RoutedEventArgs e)
         {
-            // Пример автозаполнения: просто добавляем все доступные элементы в расписание
-            var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
-            foreach (var item in availableItems.ToList())
+            try
             {
-                var newBroadcast = new Broadcast
+                var endTime = !string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text)
+                    ? TimeSpan.Parse(PlannedEndTimeTextBox.Text)
+                    : TimeSpan.FromHours(23);
+
+                var scheduler = new BroadcastScheduler(_context, _startTime, endTime);
+                var newSchedule = scheduler.GenerateSchedule(DateOnly.FromDateTime(_selectedDate));
+
+                _schedule.Clear();
+                foreach (var broadcast in newSchedule)
                 {
-                    Date = DateOnly.FromDateTime(_selectedDate),
-                    Items = new List<BroadcastItem> { item }
-                };
-                _schedule.Add(newBroadcast);
-                availableItems.Remove(item);
+                    _schedule.Add(broadcast);
+                }
+
+                UpdateScheduleTimes();
+                MessageBox.Show("Расписание успешно сгенерировано!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            AvailableItemsListBox.ItemsSource = availableItems;
-            UpdateScheduleTimes();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при генерации расписания: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 } 
