@@ -20,6 +20,9 @@ namespace OnAir.Views
         private readonly Regex _timeRegex = new Regex(@"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
         private TimeSpan _startTime;
 
+        // Предполагаемая продолжительность рекламного блока. Вам может потребоваться настроить это.
+        private readonly TimeSpan AdvertisementDuration = TimeSpan.FromMinutes(1);
+
         public BroadcastingScheduleControl()
         {
             InitializeComponent();
@@ -482,59 +485,28 @@ namespace OnAir.Views
 
         private void AutoFillButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) || !_timeRegex.IsMatch(PlannedEndTimeTextBox.Text))
+            try
             {
-                MessageBox.Show("Пожалуйста, укажите время окончания в формате ЧЧ:ММ (например, 23:00)",
-                    "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                var endTime = !string.IsNullOrEmpty(PlannedEndTimeTextBox.Text) && _timeRegex.IsMatch(PlannedEndTimeTextBox.Text)
+                    ? TimeSpan.Parse(PlannedEndTimeTextBox.Text)
+                    : TimeSpan.FromHours(23);
 
-            // Clear current schedule and return items to available list
-            var availableItems = ((List<BroadcastItem>)AvailableItemsListBox.ItemsSource).ToList();
-            foreach (var broadcast in _schedule.ToList())
-            {
-                if (broadcast.Items != null && broadcast.Items.Count > 0)
+                var scheduler = new BroadcastScheduler(_context, _startTime, endTime);
+                var newSchedule = scheduler.GenerateSchedule(DateOnly.FromDateTime(_selectedDate));
+
+                _schedule.Clear();
+                foreach (var broadcast in newSchedule)
                 {
-                    var item = broadcast.Items[0];
-                    item.BroadcastId = null; // Remove database binding
-                    availableItems.Add(item);
-                }
-            }
-            _schedule.Clear();
-            AvailableItemsListBox.ItemsSource = availableItems;
-
-            var endTime = TimeSpan.Parse(PlannedEndTimeTextBox.Text);
-            var currentTime = _startTime;
-
-            foreach (var item in availableItems.ToList())
-            {
-                // Calculate next time after adding this item
-                var nextTime = currentTime.Add(item.Duration);
-
-                // Check if we've crossed midnight
-                bool isCrossingMidnight = currentTime > endTime;
-                bool isValidTime = isCrossingMidnight ? 
-                    (nextTime <= TimeSpan.FromHours(24) && currentTime <= TimeSpan.FromHours(24)) || 
-                    (nextTime <= endTime) :
-                    nextTime <= endTime;
-
-                if (!isValidTime)
-                {
-                    break;
+                    _schedule.Add(broadcast);
                 }
 
-                var newBroadcast = new Broadcast
-                {
-                    Date = DateOnly.FromDateTime(_selectedDate),
-                    Items = new List<BroadcastItem> { item }
-                };
-                _schedule.Add(newBroadcast);
-                availableItems.Remove(item);
-                currentTime = nextTime;
+                UpdateScheduleTimes();
+                MessageBox.Show("Расписание успешно сгенерировано!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-
-            AvailableItemsListBox.ItemsSource = availableItems;
-            UpdateScheduleTimes();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при генерации расписания: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 } 

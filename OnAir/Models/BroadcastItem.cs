@@ -19,6 +19,14 @@ namespace OnAir.Models
         public int IndexInBroadcast { get; set; }
     }
 
+    // Вспомогательный класс для хранения программы и её целевого времени
+    public class ScheduleItemInfo
+    {
+        public BroadcastItem Item { get; set; }
+        public TimeSpan? TargetTime { get; set; }
+        public bool IsNews { get; set; }
+    }
+
     public enum BroadcastItemType 
     {
         Default,

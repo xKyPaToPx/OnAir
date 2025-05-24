@@ -90,6 +90,7 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Имя" Binding="{Binding Title}" Width="150" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Возрастное ограничение" Binding="{Binding AgeLimit}" Width="150" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Серия" Binding="{Binding Series}" Width="80" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Часть" Binding="{Binding Part}" Width="80" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*" IsReadOnly="True"/>
@@ -133,6 +134,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Время" Binding="{Binding StartTime, StringFormat='{}{0:hh\\:mm}'}" Width="80" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Имя" Binding="{Binding Items[0].Title}" Width="150" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Возрастное ограничение" Binding="{Binding Items[0].AgeLimit}" Width="150" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Серия" Binding="{Binding Items[0].Series}" Width="80" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Часть" Binding="{Binding Items[0].Part}" Width="80" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Items[0].Description}" Width="*" IsReadOnly="True"/>
